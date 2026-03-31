@@ -1,6 +1,9 @@
 import Foundation
-import Network
 import SwiftUI
+
+#if canImport(Network)
+import Network
+#endif
 
 /// Connection type detected by `ReachabilityKit`.
 public enum ConnectionType: String, Sendable {
@@ -18,7 +21,9 @@ public final class Reachability: ObservableObject {
     /// The shared instance of `Reachability`.
     public static let shared = Reachability()
     
+    #if canImport(Network)
     private let monitor = NWPathMonitor()
+    #endif
     private let queue = DispatchQueue(label: "ReachabilityKitQueue")
     
     /// A boolean value indicating whether the internet is currently reachable.
@@ -28,6 +33,7 @@ public final class Reachability: ObservableObject {
     @Published public private(set) var connectionType: ConnectionType = .none
     
     private init() {
+        #if canImport(Network)
         monitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor in
                 self?.isConnected = path.status == .satisfied
@@ -35,8 +41,10 @@ public final class Reachability: ObservableObject {
             }
         }
         monitor.start(queue: queue)
+        #endif
     }
     
+    #if canImport(Network)
     private func mapConnectionType(_ path: NWPath) -> ConnectionType {
         if path.usesInterfaceType(.wifi) { return .wifi }
         if path.usesInterfaceType(.cellular) { return .cellular }
@@ -44,6 +52,7 @@ public final class Reachability: ObservableObject {
         if path.status == .satisfied { return .other }
         return .none
     }
+    #endif
 }
 
 public extension View {
@@ -56,7 +65,7 @@ public extension View {
 }
 
 private struct NetworkObserverModifier: ViewModifier {
-    @StateObject private var monitor = Reachability.shared
+    @ObservedObject private var monitor = Reachability.shared
     let perform: (Bool) -> Void
     
     func body(content: Content) -> some View {
