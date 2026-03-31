@@ -5,16 +5,37 @@ import SwiftUI
 import Network
 #endif
 
-/// Connection type detected by `ReachabilityKit`.
+/// The type of network connection detected by `ReachabilityKit`.
 public enum ConnectionType: String, Sendable {
+    /// Connected via a WiFi network.
     case wifi = "WiFi"
+    /// Connected via a cellular data network.
     case cellular = "Cellular"
+    /// Connected via a wired Ethernet cable.
     case wired = "Wired"
+    /// Connected via another interface (e.g., VPN, Bluetooth).
     case other = "Other"
+    /// No active internet connection.
     case none = "No Connection"
 }
 
-/// A simplified network observer for SwiftUI apps.
+/// A simplified, modern network observer designed for SwiftUI applications.
+///
+/// `Reachability` provides a real-time stream of connectivity updates using Apple's `Network` framework.
+/// It is optimized for the ErsanQ ecosystem with automatic @MainActor updates for UI safety.
+///
+/// ## Usage
+/// ```swift
+/// @StateObject private var reachability = Reachability.shared
+/// 
+/// var body: some View {
+///     if reachability.isConnected {
+///         MainView()
+///     } else {
+///         OfflineView()
+///     }
+/// }
+/// ```
 @MainActor
 public final class Reachability: ObservableObject {
     
@@ -29,7 +50,7 @@ public final class Reachability: ObservableObject {
     /// A boolean value indicating whether the internet is currently reachable.
     @Published public private(set) var isConnected: Bool = true
     
-    /// The current type of network connection.
+    /// The current type of network connection (WiFi, Cellular, etc.).
     @Published public private(set) var connectionType: ConnectionType = .none
     
     private init() {
@@ -57,13 +78,19 @@ public final class Reachability: ObservableObject {
 
 public extension View {
     /// Responds to changes in network connectivity.
+    ///
+    /// Use this modifier to trigger actions (like toast notifications or data refreshing) 
+    /// whenever the internet connection status changes.
+    ///
     /// - Parameter perform: A closure to execute when the connection status changes.
-    /// - Returns: A view that observes network status.
+    /// - Returns: A view that observes network status and triggers the provided closure.
     func onNetworkChange(perform: @escaping (Bool) -> Void) -> some View {
         self.modifier(NetworkObserverModifier(perform: perform))
     }
 }
 
+/// An internal ViewModifier that bridges `Reachability` updates to a closure.
+@MainActor
 private struct NetworkObserverModifier: ViewModifier {
     @ObservedObject private var monitor = Reachability.shared
     let perform: (Bool) -> Void
