@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import Foundation
 import SwiftUI
 
@@ -102,3 +103,4 @@ private struct NetworkObserverModifier: ViewModifier {
             }
     }
 }
+#endif

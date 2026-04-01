@@ -21,6 +21,7 @@ let package = Package(
         .target(
             name: "ReachabilityKit",
             dependencies: [],
-            path: "Sources/ReachabilityKit"),
+            path: "Sources/ReachabilityKit",
+            exclude: ["Examples"]),
     ]
 )

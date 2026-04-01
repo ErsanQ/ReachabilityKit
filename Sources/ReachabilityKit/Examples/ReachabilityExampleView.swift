@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 import ReachabilityKit
 
@@ -65,3 +66,4 @@ struct StatusIndicator: View {
         ReachabilityExampleView()
     }
 }
+#endif
