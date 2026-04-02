@@ -57,7 +57,7 @@ public final class Reachability: ObservableObject {
     private init() {
         #if canImport(Network)
         monitor.pathUpdateHandler = { [weak self] path in
-            Task { @MainActor in
+            DispatchQueue.main.async {
                 self?.isConnected = path.status == .satisfied
                 self?.connectionType = self?.mapConnectionType(path) ?? .none
             }
@@ -91,7 +91,6 @@ public extension View {
 }
 
 /// An internal ViewModifier that bridges `Reachability` updates to a closure.
-@MainActor
 private struct NetworkObserverModifier: ViewModifier {
     @ObservedObject private var monitor = Reachability.shared
     let perform: (Bool) -> Void
